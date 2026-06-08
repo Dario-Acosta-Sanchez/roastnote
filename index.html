@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RoastNote — Tostadero de café de especialidad en Córdoba</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: { colors: { neutral: {
+    200:'#3a2c22', 300:'#5c483a', 400:'#7e6b5c', 500:'#a6978a', 700:'#e6dccf', 900:'#f3ece2'
+  } } } } }
+</script>
+<style>
+:root{
+  --bg:#f7f1e8; --card:#fffbf4; --line:#e9ddcd;
+  --ink:#352a20; --ink-soft:#71604f;
+  --roast:#9a3412; --roast2:#7c2d12;
+  --crema:#d6a24a; --crema2:#b9842f;
+}
+*{font-family:'Archivo',sans-serif}
+h1,h2,h3{font-family:'Spectral',serif;font-weight:600;letter-spacing:-.01em}
+body{background:var(--bg);color:var(--ink)}
+.glass{background:rgba(255,251,244,.62);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border:1px solid rgba(255,255,255,.7);box-shadow:0 6px 26px -14px rgba(110,75,45,.25)}
+.roast{color:var(--roast)}
+.roast-bg{background:var(--roast)}
+.crema{color:var(--crema2)}
+.btn-primary{background:var(--roast);color:#fbf3e8;font-weight:700;transition:all .2s;border-radius:10px;padding:14px 28px;border:none;cursor:pointer;box-shadow:0 10px 26px -10px rgba(154,52,18,.4)}
+.btn-primary:hover{background:var(--roast2);transform:translateY(-2px);box-shadow:0 14px 32px -10px rgba(154,52,18,.5)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;transition:all .3s;box-shadow:0 4px 22px -14px rgba(120,90,60,.16)}
+.card:hover{border-color:var(--roast);transform:translateY(-4px);box-shadow:0 16px 32px -16px rgba(154,52,18,.22)}
+.pulse-dot{display:inline-block;width:8px;height:8px;border-radius:9999px;background:#16a34a;animation:pulse 1.7s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}70%{box-shadow:0 0 0 10px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
+.opt-btn{background:#fffbf4;border:1px solid var(--line);border-radius:12px;padding:14px 18px;transition:all .2s;cursor:pointer;font-weight:600;color:var(--ink-soft);text-align:left}
+.opt-btn:hover{border-color:var(--roast);color:var(--ink)}
+.opt-btn.active{background:var(--roast);color:#fbf3e8;border-color:var(--roast);box-shadow:0 6px 20px -6px rgba(154,52,18,.45)}
+.fade-in{animation:fadein .5s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.pop-in{animation:popin .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popin{0%{opacity:0;transform:scale(.7) rotate(-6deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+.bean{border-radius:50% 50% 50% 8%;display:inline-flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:inset -6px -8px 16px rgba(0,0,0,.12), 0 8px 18px -8px rgba(110,70,40,.32)}
+.bag{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.bag.empty{border:2px dashed #ddccb8;color:#ddccb8}
+.bag.filled{box-shadow:0 8px 18px -6px rgba(154,52,18,.4)}
+.bar-track{background:#ece1d2;border-radius:9999px;overflow:hidden;height:14px}
+.bar-fill{background:linear-gradient(90deg,var(--roast),var(--crema));height:100%;border-radius:9999px;transition:width 1s ease}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:#ddcdb9;border-radius:8px}
+
+/* RUEDA DE SABOR — selector circular interactivo */
+.flavor-wheel{position:relative;width:min(280px,72vw);height:min(280px,72vw);margin:0 auto}
+.flavor-wheel svg{width:100%;height:100%;display:block}
+.flavor-seg{cursor:pointer;transition:opacity .25s, transform .25s;transform-origin:140px 140px}
+.flavor-seg:hover{opacity:1 !important}
+.flavor-seg.active{opacity:1 !important;filter:drop-shadow(0 4px 10px rgba(0,0,0,.18))}
+.flavor-center{font-family:'Spectral',serif;font-weight:600}
+
+/* VAPOR — hilos ascendiendo en el hero, evocan el café recién hecho */
+.steam{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.steam i{position:absolute;bottom:6%;width:2px;border-radius:999px;background:linear-gradient(to top, rgba(154,82,18,.22), transparent);filter:blur(1.5px);animation:steamrise ease-in infinite}
+@keyframes steamrise{
+  0%{transform:translateX(0) scaleY(.4);opacity:0}
+  20%{opacity:.5}
+  60%{transform:translateX(14px) scaleY(1)}
+  100%{transform:translateX(-10px) scaleY(1.5) translateY(-46vh);opacity:0}
+}
+</style>
+</head>
+<body class="antialiased">
+
+<!-- NAV -->
+<nav class="fixed top-0 inset-x-0 z-50 glass">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl roast-bg flex items-center justify-center font-black text-[#fbf3e8] text-lg" style="font-family:'Spectral',serif">RN</div>
+      <span class="font-semibold text-xl tracking-tight" style="font-family:'Spectral',serif">Roast<span class="roast italic">Note</span></span>
+    </div>
+    <div class="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-300">
+      <a href="#rueda" class="hover:text-[var(--ink)] transition">Tu rueda de sabor</a>
+      <a href="#lotes" class="hover:text-[var(--ink)] transition">Lotes de la semana</a>
+      <a href="#suscripcion" class="hover:text-[var(--ink)] transition">Club de Tueste</a>
+      <a href="#opiniones" class="hover:text-[var(--ink)] transition">Opiniones</a>
+    </div>
+    <a href="#rueda" class="btn-primary text-sm">Pide tu bolsa ☕</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="pt-40 pb-24 px-6 relative overflow-hidden">
+  <div class="absolute inset-0 -z-10" style="background:radial-gradient(circle at 18% 24%, rgba(154,52,18,.12), transparent 45%), radial-gradient(circle at 82% 68%, rgba(214,162,74,.16), transparent 50%);"></div>
+  <div class="steam" id="steam"></div>
+  <div class="max-w-5xl mx-auto text-center relative">
+    <span class="inline-block glass rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide text-[var(--ink-soft)] mb-6">☕ Tostadero de barrio · café de especialidad de origen único · Córdoba capital</span>
+    <h1 class="text-4xl md:text-6xl font-semibold leading-tight tracking-tight mb-6">
+      Tostamos en lotes pequeños y <span class="roast italic">anotamos cada perfil de sabor</span> para que pidas con los ojos cerrados
+    </h1>
+    <p class="text-lg text-[var(--ink-soft)] max-w-2xl mx-auto mb-10">
+      En RoastNote compramos directo a fincas que conocemos, tostamos en nuestra propia nave dos veces por semana y escribimos en cada bolsa exactamente a qué va a saber. Nada de "café intenso" como única pista: aquí sabes lo que compras antes de abrir la bolsa.
+    </p>
+    <div class="flex flex-wrap justify-center gap-4 mb-12">
+      <a href="#rueda" class="btn-primary">Descubre tu perfil de sabor</a>
+      <a href="#lotes" class="px-7 py-3.5 rounded-xl border border-[var(--line)] font-semibold text-[var(--ink)] hover:border-[var(--ink-soft)] transition">Ver lotes de esta semana</a>
+    </div>
+    <div class="flex flex-wrap justify-center gap-8 text-sm text-[var(--ink-soft)]">
+      <div class="flex items-center gap-2"><span class="pulse-dot"></span> tueste fresco los martes y viernes</div>
+      <div class="flex items-center gap-2"><span class="roast font-bold">★ 4.9</span> valoración media (193 reseñas)</div>
+      <div class="flex items-center gap-2">🌍 trazabilidad de finca, lote a lote</div>
+    </div>
+  </div>
+</header>
+
+<!-- RUEDA DE SABOR INTERACTIVA -->
+<section id="rueda" class="py-20 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-12">
+      <span class="roast font-bold uppercase tracking-widest text-sm">Tu rueda de sabor</span>
+      <h2 class="text-3xl md:text-5xl font-semibold mt-2">Toca el perfil que te apetece hoy</h2>
+      <p class="text-[var(--ink-soft)] mt-3 max-w-xl mx-auto">Nada de cuestionarios largos: gira por nuestra rueda de sabor, toca la familia que te llama y te decimos qué lote de la semana encaja contigo — y cómo prepararlo para sacarle todo el partido.</p>
+    </div>
+
+    <div class="card p-8 md:p-10">
+      <div class="grid md:grid-cols-2 gap-10 items-center">
+
+        <div class="flavor-wheel" id="flavor-wheel">
+          <svg viewBox="0 0 280 280">
+            <g class="flavor-seg" data-key="frutal" style="opacity:.82">
+              <path d="M140,140 L140,20 A120,120 0 0,1 244,80 Z" fill="#d6a24a"/>
+            </g>
+            <g class="flavor-seg" data-key="floral" style="opacity:.82">
+              <path d="M140,140 L244,80 A120,120 0 0,1 244,200 Z" fill="#e8b4a0"/>
+            </g>
+            <g class="flavor-seg" data-key="chocolate" style="opacity:.82">
+              <path d="M140,140 L244,200 A120,120 0 0,1 140,260 Z" fill="#7c2d12"/>
+            </g>
+            <g class="flavor-seg" data-key="frutos-secos" style="opacity:.82">
+              <path d="M140,140 L140,260 A120,120 0 0,1 36,200 Z" fill="#b08968"/>
+            </g>
+            <g class="flavor-seg" data-key="especiado" style="opacity:.82">
+              <path d="M140,140 L36,200 A120,120 0 0,1 36,80 Z" fill="#9a3412"/>
+            </g>
+            <g class="flavor-seg" data-key="dulce" style="opacity:.82">
+              <path d="M140,140 L36,80 A120,120 0 0,1 140,20 Z" fill="#f3d9ac"/>
+            </g>
+            <circle cx="140" cy="140" r="46" fill="#fffbf4" stroke="#e9ddcd" stroke-width="2"/>
+            <text x="140" y="145" text-anchor="middle" class="flavor-center" fill="#352a20" font-size="15">Toca un</text>
+            <text x="140" y="162" text-anchor="middle" class="flavor-center" fill="#352a20" font-size="15">sabor</text>
+          </svg>
+        </div>
+
+        <div>
+          <p id="flavor-hint" class="text-sm uppercase tracking-widest font-bold text-[var(--ink-soft)] mb-3">Elige una familia de sabor en la rueda</p>
+          <div id="flavor-empty" class="text-[var(--ink-soft)]">
+            <p class="mb-3">Cada lote que tostamos lo catamos en mesa y lo situamos en esta rueda según lo que de verdad sabemos que vas a notar en la taza: de frutal y floral a chocolate profundo o especiado.</p>
+            <p>Toca cualquiera de los seis sabores para ver qué lote de esta semana encaja con lo que te apetece hoy.</p>
+          </div>
+          <div id="flavor-result" class="hidden">
+            <div class="flex items-center gap-3 mb-3">
+              <span id="flavor-emoji" class="text-4xl"></span>
+              <h3 id="flavor-name" class="text-2xl font-semibold roast"></h3>
+            </div>
+            <p id="flavor-desc" class="text-[var(--ink-soft)] mb-4"></p>
+            <div class="glass rounded-xl px-5 py-3 inline-block">
+              <p class="text-sm"><span class="font-bold">Cómo prepararlo:</span> <span id="flavor-brew"></span></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CLUB DE TUESTE -->
+<section id="suscripcion" class="py-20 px-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-12">
+      <span class="crema font-bold uppercase tracking-widest text-sm">Club de Tueste</span>
+      <h2 class="text-3xl md:text-5xl font-semibold mt-2">Tu cartilla de bolsas, sin trampas</h2>
+      <p class="text-[var(--ink-soft)] mt-3 max-w-xl mx-auto">Cada bolsa de 250g que te llevas suma un sello. Junta 6 y la séptima bolsa va por la casa — recién tostada, igual que todas las demás.</p>
+    </div>
+
+    <div class="card p-8 md:p-10">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+          <p class="text-sm text-[var(--ink-soft)]">Cartilla de</p>
+          <p class="text-xl font-semibold" style="font-family:'Spectral',serif">Nora — socia desde enero</p>
+        </div>
+        <span class="glass rounded-full px-4 py-1.5 text-xs font-semibold text-[var(--ink-soft)]">4 / 6 bolsas</span>
+      </div>
+
+      <div class="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-8">
+        <div class="bag filled roast-bg text-[#fbf3e8]">☕</div>
+        <div class="bag filled roast-bg text-[#fbf3e8]">☕</div>
+        <div class="bag filled roast-bg text-[#fbf3e8]">☕</div>
+        <div class="bag filled roast-bg text-[#fbf3e8]">☕</div>
+        <div class="bag empty">+</div>
+        <div class="bag empty">+</div>
+      </div>
+
+      <div class="bar-track mb-3">
+        <div id="loyalty-bar" class="bar-fill" style="width:0%"></div>
+      </div>
+      <div class="flex items-center justify-between text-sm text-[var(--ink-soft)] mb-6">
+        <span>Progreso del club</span>
+        <span id="loyalty-pct" class="font-bold">0%</span>
+      </div>
+
+      <div class="glass rounded-2xl px-6 py-4 text-center">
+        <p class="font-bold text-lg">¡Te faltan 2 bolsas para la tuya gratis! 🎉</p>
+        <p class="text-[var(--ink-soft)] text-sm mt-1">Compra en tienda o pide para recoger, y enseña tu cartilla digital — sumamos el sello al momento, sin esperas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOTES DE LA SEMANA -->
+<section id="lotes" class="py-20 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-12">
+      <span class="roast font-bold uppercase tracking-widest text-sm">En tueste esta semana</span>
+      <h2 class="text-3xl md:text-5xl font-semibold mt-2">Seis orígenes, seis perfiles distintos</h2>
+      <p class="text-[var(--ink-soft)] mt-3 max-w-xl mx-auto">Tostamos en lotes pequeños dos veces por semana y rotamos según lo que está en su mejor momento de cosecha. Esto es lo que tenemos recién salido del tostador.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <div class="card p-6">
+        <div class="bean w-20 h-20 mb-5" style="background:linear-gradient(145deg,#f3d9ac,#d6a24a)">🍑</div>
+        <h3 class="font-semibold text-lg mb-1" style="font-family:'Spectral',serif">Etiopía Yirgacheffe — lavado</h3>
+        <p class="text-[var(--ink-soft)] text-sm mb-4">Notas a melocotón, jazmín y un final a té negro. Tueste claro, ideal para filtro. La que recomendamos a quien dice que "no le gusta el café de toda la vida".</p>
+        <span class="text-xs glass rounded-full px-3 py-1 text-[var(--ink-soft)]">🍑 Frutal · Filtro</span>
+      </div>
+
+      <div class="card p-6">
+        <div class="bean w-20 h-20 mb-5" style="background:linear-gradient(145deg,#9a3412,#7c2d12)">🍫</div>
+        <h3 class="font-semibold text-lg mb-1" style="font-family:'Spectral',serif">Brasil Cerrado — natural</h3>
+        <p class="text-[var(--ink-soft)] text-sm mb-4">Cuerpo denso, cacao, frutos secos tostados y un dulzor que recuerda al caramelo oscuro. Tueste medio-alto, perfecto para espresso con leche.</p>
+        <span class="text-xs glass rounded-full px-3 py-1 text-[var(--ink-soft)]">🍫 Chocolate · Espresso</span>
+      </div>
+
+      <div class="card p-6">
+        <div class="bean w-20 h-20 mb-5" style="background:linear-gradient(145deg,#e8b4a0,#c97f6a)">🌸</div>
+        <h3 class="font-semibold text-lg mb-1" style="font-family:'Spectral',serif">Kenia Nyeri AA — lavado</h3>
+        <p class="text-[var(--ink-soft)] text-sm mb-4">Acidez brillante, grosella negra y un toque floral muy reconocible. De los cafés que hacen que la gente pida la ficha del origen.</p>
+        <span class="text-xs glass rounded-full px-3 py-1 text-[var(--ink-soft)]">🌸 Floral · Filtro o V60</span>
+      </div>
+
+      <div class="card p-6">
+        <div class="bean w-20 h-20 mb-5" style="background:linear-gradient(145deg,#b08968,#8a6240)">🌰</div>
+        <h3 class="font-semibold text-lg mb-1" style="font-family:'Spectral',serif">Colombia Huila — honey</h3>
+        <p class="text-[var(--ink-soft)] text-sm mb-4">Avellana, panela y manzana madura en equilibrio perfecto. Versátil de verdad: bien en filtro, bien en espresso, bien con leche.</p>
+        <span class="text-xs glass rounded-full px-3 py-1 text-[var(--ink-soft)]">🌰 Frutos secos · Versátil</span>
+      </div>
+
+      <div class="card p-6">
+        <div class="bean w-20 h-20 mb-5" style="background:linear-gradient(145deg,#9a3412,#5c2510)">🌶️</div>
+        <h3 class="font-semibold text-lg mb-1" style="font-family:'Spectral',serif">India Monzonado Malabar</h3>
+        <p class="text-[var(--ink-soft)] text-sm mb-4">Especiado, terroso y con muy poca acidez. Un café de carácter fuerte para quien ya tiene paladar formado y quiere algo distinto de verdad.</p>
+        <span class="text-xs glass rounded-full px-3 py-1 text-[var(--ink-soft)]">🌶️ Especiado · Edición limitada</span>
+      </div>
+
+      <div class="card p-6">
+        <div class="bean w-20 h-20 mb-5" style="background:linear-gradient(145deg,#f3d9ac,#e0b568)">🍯</div>
+        <h3 class="font-semibold text-lg mb-1" style="font-family:'Spectral',serif">Guatemala Antigua — lavado</h3>
+        <p class="text-[var(--ink-soft)] text-sm mb-4">Caramelo, miel de azahar y un cuerpo suave y redondo. El que recomendamos para empezar el día sin sustos y con una sonrisa.</p>
+        <span class="text-xs glass rounded-full px-3 py-1 text-[var(--ink-soft)]">🍯 Dulce · El más pedido</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- OPINIONES -->
+<section id="opiniones" class="py-20 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-12">
+      <span class="crema font-bold uppercase tracking-widest text-sm">Lo que dice el barrio</span>
+      <h2 class="text-3xl md:text-5xl font-semibold mt-2">Cuatro tazas de opinión sincera</h2>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-14">
+      <div class="card p-6 text-center">
+        <p class="text-3xl font-semibold roast mb-1" style="font-family:'Spectral',serif">4.9 ★</p>
+        <p class="text-sm text-[var(--ink-soft)]">valoración media en Google</p>
+      </div>
+      <div class="card p-6 text-center">
+        <p class="text-3xl font-semibold roast mb-1" style="font-family:'Spectral',serif">+5.400</p>
+        <p class="text-sm text-[var(--ink-soft)]">bolsas tostadas este año</p>
+      </div>
+      <div class="card p-6 text-center">
+        <p class="text-3xl font-semibold roast mb-1" style="font-family:'Spectral',serif">19</p>
+        <p class="text-sm text-[var(--ink-soft)]">orígenes distintos catados en 2026</p>
+      </div>
+      <div class="card p-6 text-center">
+        <p class="text-3xl font-semibold roast mb-1" style="font-family:'Spectral',serif">760+</p>
+        <p class="text-sm text-[var(--ink-soft)]">socios en el Club de Tueste</p>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="card p-6">
+        <p class="text-[var(--ink)] mb-4">"Toqué 'frutal' en la rueda sin esperar gran cosa y me llevé el de Etiopía. Llevo tres bolsas seguidas pidiendo el mismo. No sabía que el café pudiera saber a melocotón."</p>
+        <p class="font-semibold text-sm" style="font-family:'Spectral',serif">— Elena F. <span class="text-[var(--ink-soft)] font-normal not-italic">· vecina de Levante</span></p>
+      </div>
+      <div class="card p-6">
+        <p class="text-[var(--ink)] mb-4">"Que escriban en la bolsa cómo prepararlo y qué notas vas a encontrar parece poca cosa hasta que lo pruebas. Ahora no sé pedir café en otro sitio sin esa información."</p>
+        <p class="font-semibold text-sm" style="font-family:'Spectral',serif">— Tomás B. <span class="text-[var(--ink-soft)] font-normal not-italic">· Ciudad Jardín</span></p>
+      </div>
+      <div class="card p-6">
+        <p class="text-[var(--ink)] mb-4">"El Club de Tueste de verdad compensa: en cuatro meses ya me ha tocado una bolsa gratis, y siempre recién tostada, no de almacén. Se nota muchísimo la diferencia."</p>
+        <p class="font-semibold text-sm" style="font-family:'Spectral',serif">— Marisa Q. <span class="text-[var(--ink-soft)] font-normal not-italic">· Centro</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="py-20 px-6">
+  <div class="max-w-4xl mx-auto card p-12 text-center relative overflow-hidden">
+    <div class="absolute inset-0 -z-10" style="background:radial-gradient(circle at 26% 30%, rgba(154,52,18,.12), transparent 55%), radial-gradient(circle at 76% 72%, rgba(214,162,74,.16), transparent 55%);"></div>
+    <h2 class="text-3xl md:text-5xl font-semibold mb-4">¿Te tomamos un café del lote de esta semana?</h2>
+    <p class="text-[var(--ink-soft)] max-w-xl mx-auto mb-8">Pásate por la nave, te preparamos una cata rápida y te explicamos qué notas vas a encontrar antes de que te lleves la bolsa. Y si nos sigues en redes, sabrás cuándo cambia el tueste.</p>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="#rueda" class="btn-primary">Descubre tu perfil de sabor</a>
+      <a href="#suscripcion" class="px-7 py-3.5 rounded-xl border border-[var(--line)] font-semibold text-[var(--ink)] hover:border-[var(--ink-soft)] transition">Unirme al Club de Tueste</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="py-10 px-6 border-t border-neutral-700">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[var(--ink-soft)]">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg roast-bg flex items-center justify-center font-black text-[#fbf3e8] text-xs" style="font-family:'Spectral',serif">RN</div>
+      <span class="font-semibold text-[var(--ink)]" style="font-family:'Spectral',serif">RoastNote</span> — tostadero de especialidad · Córdoba
+    </div>
+    <p>Calle Adolfo Suárez, nave del Polígono · Tueste martes y viernes, tienda de 9:00 a 14:00</p>
+    <p>© 2026 RoastNote. Tostado en lotes pequeños, anotado uno a uno.</p>
+  </div>
+</footer>
+
+<script>
+// ---------- VAPOR ASCENDENTE ----------
+(() => {
+  const wrap = document.getElementById('steam');
+  const n = 9;
+  for (let i = 0; i < n; i++){
+    const el = document.createElement('i');
+    const h = 70 + Math.random() * 90;
+    el.style.height = h + 'px';
+    el.style.left = (8 + Math.random() * 84) + '%';
+    el.style.animationDuration = (6 + Math.random() * 6) + 's';
+    el.style.animationDelay = (-Math.random() * 10) + 's';
+    wrap.appendChild(el);
+  }
+})();
+
+// ---------- RUEDA DE SABOR INTERACTIVA ----------
+const flavors = {
+  'frutal':       { emoji:'🍑', name:'Etiopía Yirgacheffe — lavado', desc:'Melocotón, jazmín y un final a té negro. Ligero, brillante y muy lejos de la idea de "café fuerte" que tenías en la cabeza.', brew:'filtro o V60, agua a 92-94°C, 3 minutos' },
+  'floral':       { emoji:'🌸', name:'Kenia Nyeri AA — lavado', desc:'Acidez viva, grosella negra y un aroma floral que se queda en la memoria. De los que hacen que pidas la ficha del origen al camarero.', brew:'V60 o Chemex, molienda media-fina, 3 minutos' },
+  'chocolate':    { emoji:'🍫', name:'Brasil Cerrado — natural', desc:'Cuerpo denso, cacao y un dulzor a caramelo oscuro que envuelve la taza entera. El compañero perfecto para un espresso con leche.', brew:'espresso o moka, molienda fina, 25-30 segundos' },
+  'frutos-secos': { emoji:'🌰', name:'Colombia Huila — honey', desc:'Avellana, panela y manzana madura en equilibrio. Versátil donde las haya: bien en filtro, bien en espresso, bien con leche.', brew:'cualquier método — empieza por filtro a 90-92°C' },
+  'especiado':    { emoji:'🌶️', name:'India Monzonado Malabar', desc:'Terroso, especiado y con muy poca acidez. Un perfil con mucho carácter para quien quiere salir de lo de siempre de verdad.', brew:'prensa francesa, molienda gruesa, 4 minutos' },
+  'dulce':        { emoji:'🍯', name:'Guatemala Antigua — lavado', desc:'Caramelo, miel de azahar y un cuerpo suave y redondo. El que recomendamos para empezar el día sin sustos y con una sonrisa.', brew:'filtro o cafetera italiana, molienda media' },
+};
+
+(() => {
+  const segs = document.querySelectorAll('.flavor-seg');
+  const hint = document.getElementById('flavor-hint');
+  const empty = document.getElementById('flavor-empty');
+  const result = document.getElementById('flavor-result');
+  const emojiEl = document.getElementById('flavor-emoji');
+  const nameEl = document.getElementById('flavor-name');
+  const descEl = document.getElementById('flavor-desc');
+  const brewEl = document.getElementById('flavor-brew');
+
+  segs.forEach(seg => {
+    seg.addEventListener('click', () => {
+      segs.forEach(s => { s.classList.remove('active'); s.style.opacity = '.82'; });
+      seg.classList.add('active');
+
+      const key = seg.dataset.key;
+      const f = flavors[key];
+      hint.textContent = 'Tu lote de esta semana es...';
+      empty.classList.add('hidden');
+
+      emojiEl.textContent = f.emoji;
+      nameEl.textContent = f.name;
+      descEl.textContent = f.desc;
+      brewEl.textContent = f.brew;
+
+      result.classList.remove('hidden');
+      result.classList.remove('pop-in');
+      void result.offsetWidth;
+      result.classList.add('pop-in');
+    });
+  });
+})();
+
+// ---------- CARTILLA DEL CLUB DE TUESTE ----------
+window.addEventListener('DOMContentLoaded', () => {
+  const bar = document.getElementById('loyalty-bar');
+  const pct = document.getElementById('loyalty-pct');
+  requestAnimationFrame(() => {
+    bar.style.width = '67%';
+    pct.textContent = '67%';
+  });
+});
+</script>
+
+</body>
+</html>
